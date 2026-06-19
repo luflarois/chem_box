@@ -28,7 +28,7 @@ contains
             max_err_p = 0.0
             print *,' -- Comparando e gerando arquivo '//trim(spc_name(n))//'.csv'
             open(unit=55,file=trim(spc_name(n))//".csv",status="replace",action="write")
-            write(55,fmt='(A)') "Cell,level,conc_comp,conc_brams,erro_abs,erro_per"
+            write(55,fmt='(A)') "block,count,conc_comp,conc_brams,erro_abs,erro_per"
             do i = 1,nob
                 do ij=1,block_end(i)
                     erro_abs = abs(chem1_g(n)%sc_p(ij,i)-chemo_g(n)%sc_p(ij,i))
