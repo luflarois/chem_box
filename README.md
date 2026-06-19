@@ -52,3 +52,32 @@ block,count,conc_comp,conc_brams,erro_abs,erro_per
 000001,11,  0.34982349E+02,  0.34982349E+02,  0.00000000E+00,  0.000000
 000001,12,  0.35487305E+02,  0.35487305E+02,  0.00000000E+00,  0.000000
 ```
+
+## How to generate the input data
+
+To generate the input data You need to modify the BRAMS Model. Get the Fortran module in https://drive.google.com/file/d/1lSYq-o6l9Gb85MfDkpo_S1pN6GMQy9Yo/view?usp=sharing and change the original inside src/brams/ccatt directory by this one. Then, recompile the BRAMS model.
+
+This subroutine write on unit 22, the data used to test the box. There are 3 sectors with "write(22)", for example:
+
+```fortran
+if(time==0.0 .or. time==28800 .or. time==43200) then
+print *,'Writing input/output file...',int(time),mynum
+write(f_name,fmt='("monan_rodas3_iofil_",I5.5,"_",I1.1,".txt")') int(time),mynum
+open(unit=22,file=f_name,status='replace',action='write')
+
+   
+write(22,fmt='(13(I8,1X))') m1,m2,m3,nspecies,nr_photo,nr,maxnspecies,nspecies_chem_transported,nspecies_chem_no_transported, nob, maxblock_size, chemistry,n_dyn_chem
+write(22,fmt='(A20)') split_method
+write(22,fmt='(2(F18.6,1X))') dtlt,time
+do ispc=1,nspecies_chem_transported
+   write(22,fmt='(I2.2)') transp_chem_index(ispc)
+end do
+write(22,fmt='(A)') "----"
+do ispc = 1, nspecies_chem_no_transported
+   write(22,fmt='(I2.2)') no_transp_chem_index(ispc)
+end do
+end if
+```
+
+See that the time to write is on beginning of sectors. If You want to modify this one be carefull.
+
