@@ -57,9 +57,11 @@ block,count,conc_comp,conc_brams,erro_abs,erro_per
 
 To generate the input data You need to modify the BRAMS Model. Get the Fortran module in https://drive.google.com/file/d/1lSYq-o6l9Gb85MfDkpo_S1pN6GMQy9Yo/view?usp=sharing and change the original inside src/brams/ccatt directory by this one. Then, recompile the BRAMS model.
 
-This subroutine write on unit 22, the data used to test the box. There are 3 sectors with "write(22)", for example:
+This subroutine write on unit 22, the data used to test the box. There are 3 sectors with "write(22)", see bellow:
 
 ```fortran
+(code ..........................)
+
 if(time==0.0 .or. time==28800 .or. time==43200) then
 print *,'Writing input/output file...',int(time),mynum
 write(f_name,fmt='("monan_rodas3_iofil_",I5.5,"_",I1.1,".txt")') int(time),mynum
@@ -77,6 +79,49 @@ do ispc = 1, nspecies_chem_no_transported
    write(22,fmt='(I2.2)') no_transp_chem_index(ispc)
 end do
 end if
+
+(code .........................)
+
+if(time==0.0 .or. time==28800 .or. time==43200) then
+print *,'Writing input/output file...',int(time),mynum
+write(f_name,fmt='("monan_rodas3_iofil_",I5.5,"_",I1.1,".txt")') int(time),mynum
+open(unit=22,file=f_name,status='replace',action='write')
+
+   
+write(22,fmt='(13(I8,1X))') m1,m2,m3,nspecies,nr_photo,nr,maxnspecies,nspecies_chem_transported,nspecies_chem_no_transported, nob, maxblock_size, chemistry,n_dyn_chem
+write(22,fmt='(A20)') split_method
+write(22,fmt='(2(F18.6,1X))') dtlt,time
+do ispc=1,nspecies_chem_transported
+   write(22,fmt='(I2.2)') transp_chem_index(ispc)
+end do
+write(22,fmt='(A)') "----"
+do ispc = 1, nspecies_chem_no_transported
+   write(22,fmt='(I2.2)') no_transp_chem_index(ispc)
+end do
+end if
+
+(code ..........................)
+
+if(time==0.0 .or. time==28800 .or. time==43200) then
+write(22,fmt='(A)') 'Output -----------------------------------------------'
+do i = 1, nob !- loop over all blocks
+   do ijk = 1, block_end(i) !index_g%block_end(i)
+      kij_ = kij_index(ijk, i) !index_g%kij_index(ijk,i)
+      k_ = indexk(ijk, i) !index_g%indexk(ijk,i)
+      i_ = indexi(ijk, i) !index_g%indexi(ijk,i)
+      j_ = indexj(ijk, i) !index_g%indexj(ijk,i)
+      ij = (j_-1)*(m2-1)+i_
+      write(22,fmt='(6(I6.6,1X))') ij,ijk, kij_, k_, i_, j_
+      do n=1,nspecies
+         write(22,fmt='(3(E20.10,1X))') chem1_g(n)%sc_p(k_,i_,j_),chem1_g(n)%sc_t_dyn(kij_),chem1_g(n)%sc_t(kij_)
+      end do
+   end do
+end do
+close(unit=22)
+end if
+
+   end subroutine chem_rodas3_dyndt
+
 ```
 
 See that the time to write is on beginning of sectors. If You want to modify this one be carefull.
